@@ -1,0 +1,24 @@
+﻿@using OagengTechnicalTest.Data.Models;
+
+<div class="col-12" style="overflow-y:auto ;height:100%">
+    <div class="row">
+        <RadzenFieldset Text="Table Nodes" Style="width:100%;">
+            <RadzenDataGrid AllowFiltering="true" FilterPopupRenderMode="PopupRenderMode.OnDemand" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowPaging="true" PageSize="30"
+                            AllowSorting="true" Data="@reports" TItem="OagengTechnicalTest.Data.Models.Report" ColumnWidth="200px"
+                            SelectionMode="DataGridSelectionMode.Single" >
+                <Columns>
+                    <RadzenDataGridColumn TItem="OagengTechnicalTest.Data.Models.Report" Property="BranchCode" Title="Branch Code " />
+                    <RadzenDataGridColumn TItem="OagengTechnicalTest.Data.Models.Report" Property="AccountType" Title="Account Type" />
+                    <RadzenDataGridColumn TItem="OagengTechnicalTest.Data.Models.Report" Property="Status" Title="Status" />
+                    <RadzenDataGridColumn TItem="OagengTechnicalTest.Data.Models.Report" Property="TotalCount" Title="Total Count" />
+                    <RadzenDataGridColumn TItem="OagengTechnicalTest.Data.Models.Report" Property="TotalAmount" Title="Total Amount" />
+                </Columns>
+            </RadzenDataGrid>
+        </RadzenFieldset>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public List<OagengTechnicalTest.Data.Models.Report> reports { get; set; }
+}

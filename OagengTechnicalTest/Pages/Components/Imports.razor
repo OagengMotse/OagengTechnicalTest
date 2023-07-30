@@ -1,0 +1,130 @@
+﻿@using OagengTechnicalTest.Data.Models
+@using OagengTechnicalTest.Data;
+@using OagengTechnicalTest.Data.Enum;
+@inject ViewService viewModel;
+
+<div class="col-12" style="overflow-y:auto ;height:100%">
+    <div class="row">
+        <RadzenFieldset Text="Master Grid" Style="width:100%;">
+            <RadzenDataGrid @ref="grid" AllowFiltering="true" FilterPopupRenderMode="PopupRenderMode.OnDemand" EditMode="DataGridEditMode.Single" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowPaging="true" PageSize="30"
+                            AllowSorting="true" Data="@masterData" TItem="OagengTechnicalTest.Data.Models.MasterData" ColumnWidth="200px"
+                            SelectionMode="DataGridSelectionMode.Single" RowSelect="@onMasterDataChange">
+                <Columns>
+                    <RadzenDataGridColumn TItem="OagengTechnicalTest.Data.Models.MasterData" Property="AccountHolder" Title="Account Holder" />
+                    <RadzenDataGridColumn TItem="OagengTechnicalTest.Data.Models.MasterData" Property="BranchCode" Title="Branch Code" />
+                    <RadzenDataGridColumn TItem="OagengTechnicalTest.Data.Models.MasterData" Property="AccountNumber" Title="Account Number" />
+                    <RadzenDataGridColumn TItem="OagengTechnicalTest.Data.Models.MasterData" Property="AccountType" Title="Account Type" />
+                    <RadzenDataGridColumn TItem="OagengTechnicalTest.Data.Models.MasterData" Property="AccountType" Title="Account Type" >
+                        <Template Context="data">
+                            @data.AccountType
+                        </Template>
+                        <EditTemplate Context="data">
+                               <EditForm Model="viewModel">
+                                   <InputSelect class="rz-dropdown" @bind-Value="data.AccountType">
+                                       @foreach (var item in viewModel.accountTypes)
+                                             {
+                                              <option value="@item.Value">@item.Value</option>
+                                             }
+                                    </InputSelect>
+                                </EditForm>
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+
+                                    <RadzenDataGridColumn TItem="OagengTechnicalTest.Data.Models.MasterData" Context="order" Filterable="false" Sortable="false" TextAlign="TextAlign.Right" Width="156px">
+                                    <Template Context="data">
+                                        <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@(args => EditRow(data))" @onclick:stopPropagation="true">
+                                        </RadzenButton>
+                                    </Template>
+                                    <EditTemplate Context="data">
+                                        <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Success" Variant="Variant.Flat" Size="ButtonSize.Medium" Click="@((args) => onMasterDataUpdate(data))">
+                                        </RadzenButton>
+                                        <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Variant="Variant.Flat" Size="ButtonSize.Medium" class="my-1 ms-1" Click="@((args) => onMasterDataCancel(data))">
+                                        </RadzenButton>
+                                    </EditTemplate>
+                                </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        </RadzenFieldset>
+    </div>
+    @if (detailData is not null)
+    {
+            <div class="row">
+                <RadzenFieldset Text="Detail Grid" Style="width:100%;">
+                    <RadzenDataGrid AllowFiltering="true" FilterPopupRenderMode="PopupRenderMode.OnDemand" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" AllowPaging="true" PageSize="30"
+                                AllowSorting="true" Data="@detailData" TItem="OagengTechnicalTest.Data.Models.DetailData" ColumnWidth="200px"
+                                SelectionMode="DataGridSelectionMode.Single">
+                        <Columns>
+                            <RadzenDataGridColumn TItem="OagengTechnicalTest.Data.Models.DetailData" Property="TransactionDate" Title="Transaction Date" />
+                            <RadzenDataGridColumn TItem="OagengTechnicalTest.Data.Models.DetailData" Property="Amount" Title="Amount" >
+                             <Template Context="data">
+                                @if(data.Amount>500.00)
+                                {
+                                    <p style="color:cornflowerblue">@data.Amount</p>
+                                }
+                                else
+                                {
+                                    <p>@data.Amount</p>
+                                }
+                            </Template>
+                            </RadzenDataGridColumn>
+
+                            <RadzenDataGridColumn TItem="OagengTechnicalTest.Data.Models.DetailData" Property="Status" Title="Status" />
+                            <RadzenDataGridColumn TItem="OagengTechnicalTest.Data.Models.DetailData" Property="EffectiveStatusDate" Title="Effective Status Date" />
+                            <RadzenDataGridColumn TItem="OagengTechnicalTest.Data.Models.DetailData"  Title="Time Breached" >
+                            <Template Context="data">
+                                @if(data.TimeBreached=="Yes")
+                                {
+                                    <p style ="color:yellow">@data.TimeBreached</p>
+                                }else
+                                {
+                                    <p style="color:green">@data.TimeBreached</p>
+                                }
+                            </Template>
+                            </RadzenDataGridColumn>
+                                 
+                        </Columns>
+                    </RadzenDataGrid>
+                </RadzenFieldset>
+            </div>    
+    }
+
+</div>
+
+
+
+@code {
+    [Parameter]
+    public List<MasterData> masterData { get; set; }
+    private List<DetailData> detailData { get; set; }
+    RadzenDataGrid<MasterData> grid;
+    MasterData dataToUpdate;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+    }
+    private async void onMasterDataChange(MasterData master)
+    {
+       detailData= viewModel.prepareDetailData(master);
+       StateHasChanged();
+    }
+
+    async Task EditRow(MasterData data)
+    {
+        dataToUpdate = data;
+        await grid.EditRow(data);
+    }
+
+    private async void onMasterDataUpdate(MasterData master)
+    {
+        viewModel.updateMasterData(master);
+        grid.CancelEditRow(master);
+        StateHasChanged();
+    }
+
+    private async void onMasterDataCancel(MasterData master)
+    {
+        grid.CancelEditRow(master);
+        StateHasChanged();
+    }
+}

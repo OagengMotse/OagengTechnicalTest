@@ -1,0 +1,95 @@
+﻿@page "/"
+@using OagengTechnicalTest.Data;
+@using OagengTechnicalTest.Data.Enum;
+@inject ViewService viewModel;
+@inject IJSRuntime js
+
+
+<RadzenLayout Style=" grid-template-areas: 'rz-sidebar rz-header' 'rz-sidebar rz-body'">
+    <RadzenSidebar>
+        <RadzenPanelMenu>
+            <RadzenPanelMenuItem Text="Import File" Icon="input" Click="@(args => navigate(PageOption.FileImport))" />
+            <RadzenPanelMenuItem Text="View Imports" Icon="list" Click="@(args => navigate(PageOption.Import))" />
+            <RadzenPanelMenuItem Text="Report" Icon="date_range" Click="@(args => navigate(PageOption.Report))" />
+        </RadzenPanelMenu>
+    </RadzenSidebar>
+    <RadzenBody>
+        <div class="rz-p-4">         
+            @if (page == PageOption.FileImport)
+            {
+                <FileImport />
+            }
+            else if (page == PageOption.Import)
+            {
+          
+                <Imports masterData="viewModel.masterData" />
+            }
+            else if (page == PageOption.Report)
+            {
+                <Report reports="viewModel.reports"/>
+            }
+            else
+            {
+
+            }
+        </div>
+    </RadzenBody>
+</RadzenLayout>
+
+
+
+
+
+@code{
+    public PageOption page;
+    protected override async Task OnInitializedAsync()
+    {
+        page = PageOption.None;
+    }
+    private async void navigate(PageOption page)
+    {
+        switch(page)
+        {
+            case PageOption.FileImport:
+                {
+                    this.page = page;
+                }
+                break;
+            case PageOption.Import:
+                {
+                    if (viewModel.CSVFile is null)
+                    {
+                        await js.InvokeVoidAsync("alert", "Please Upload CSV File First.");
+                    }
+                    else if(!String.IsNullOrEmpty(viewModel.lastError))
+                    {
+                        await js.InvokeVoidAsync("alert", viewModel.lastError);
+                    }
+                    else
+                    {
+                        viewModel.prepareMasterData();
+                        this.page = page;
+                    }        
+                }
+                break;
+            case PageOption.Report:
+                {
+                    if (viewModel.CSVFile is null)
+                    {
+                        await js.InvokeVoidAsync("alert", "Please Upload CSV File First.");
+                    }
+                    else if (!String.IsNullOrEmpty(viewModel.lastError))
+                    {
+                        await js.InvokeVoidAsync("alert", viewModel.lastError);
+                    }
+                    else
+                    {
+                        viewModel.prepareReport();
+                        this.page = page;
+                    }
+                }
+                break;
+        }
+        StateHasChanged();
+    }
+}
